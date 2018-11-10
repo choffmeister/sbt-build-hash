@@ -1,5 +1,7 @@
 # sbt-build-signature
 
+[![Download](https://api.bintray.com/packages/choffmeister/sbt-plugins/sbt-build-signature/images/download.svg)](https://bintray.com/choffmeister//sbt-plugins/sbt-build-signature/_latestVersion)
+
 An sbt plugin to detect which submodule actually has changes. It uses information about sources, resources, and
 classpath dependencies from SBT to calculate a SHA-1 signature for every module. The intend of this plugin is for usage
 with multi-module SBT projects that have continuous deployment attached. With this plugin one can reliably decide which
@@ -12,7 +14,7 @@ This plugin requires sbt 1.0.0+
 ```scala
 // plugins.sbt
 resolvers += Resolver.bintrayIvyRepo("choffmeister", "sbt-plugins")
-addSbtPlugin("de.choffmeister" % "sbt-build-signature" % "0.1.0")
+addSbtPlugin("de.choffmeister" % "sbt-build-signature" % "x.y.z")
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 ```
 
