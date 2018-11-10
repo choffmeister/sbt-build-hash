@@ -27,7 +27,7 @@ lazy val service = project.in(file("service")).dependsOn(common)
     // You have continuous deployment in place which operates on your master branch. Then the key should probably
     // be the git branch. This way pushes to master are only compared to the last push to master, not to pushed to other
     // branches.
-    buildHashKey := s"service-${git.gitCurrentBranch.value}",
+    buildHashKey := s"${name.value}-${git.gitCurrentBranch.value}",
     // Make sure that this folder is kept across multiple builds of your project.
     buildHashStoreDirectory := "/var/sbt/cache",
     // If the hash should depend on more file than just sources, resources and classpath dependencies, you can add
