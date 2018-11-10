@@ -7,6 +7,8 @@ classpath dependencies from SBT to calculate a SHA-1 hash for every module. The 
 with multi-module SBT projects that have continuous deployment attached. With this plugin one can reliably decide which
 microservices have to be updated after successful building.
 
+THIS IS STILL EXPERIMENTAL!
+
 ## Usage
 
 This plugin requires sbt 1.0.0+
