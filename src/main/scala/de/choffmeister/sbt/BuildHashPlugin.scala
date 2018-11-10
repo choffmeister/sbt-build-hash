@@ -24,7 +24,7 @@ object BuildHashPlugin extends AutoPlugin {
 
   override lazy val projectSettings = Seq(
     buildHashKey := "default",
-    buildHashStoreDirectory := target.value,
+    buildHashStoreDirectory := target.value / "build-hashes",
     buildHashFiles := {
       val s = (sources in Compile).value
       val r = (resources in Compile).value
@@ -50,6 +50,13 @@ object BuildHashPlugin extends AutoPlugin {
       names.zip(hashs).zip(checks).map { case ((name, hash), check) =>
         (name, hash, check)
       }
+    },
+    buildHashWriteChanged := {
+      val changed =
+        buildHashOverview.value.collect {
+          case (name, _, false) => name
+        }
+      sbt.IO.writeLines(buildHashStoreDirectory.value / "changed", changed)
     }
   )
 }

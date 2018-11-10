@@ -25,8 +25,8 @@ lazy val service = project.in(file("service")).dependsOn(common)
   .settings(
     // Make sure that the key properly separates your relevant builds from irrelevant ones. Example:
     // You have continuous deployment in place which operates on your master branch. Then the key should probably
-    // be the git branch. This way pushes to master are only compared to the last push to master, not to pushed to other
-    // branches.
+    // include the git branch. This way pushes to master are only compared to the last push to master, not to pushed to
+    // other branches.
     buildHashKey := s"${name.value}-${git.gitCurrentBranch.value}",
     // Make sure that this folder is kept across multiple builds of your project.
     buildHashStoreDirectory := "/var/sbt/cache",
@@ -34,23 +34,13 @@ lazy val service = project.in(file("service")).dependsOn(common)
     // custom files here.
     buildHashFiles += baseDirectory.value / "some-special-file.txt"
   )
-
-// this is a custom example task that you might want to add
-lazy val buildHashGenerateChangeList = taskKey[Unit]("this task is used to prepare a file for continuous deployment")
-buildHashGenerateChangeList := {
-  val changed =
-    buildHashOverview.value.collect {
-      case (name, _, false) => name
-    }
-  sbt.IO.writeLines(file(".") / "changed.txt", changed)
-}
 ```
 
 ```bash
 # continuous-deployment.sh
-sbt buildHashGenerateChangeList
+sbt buildHashWriteChanged
 
-CHANGED_MODULES=$(cat changed.txt)
+CHANGED_MODULES=$(cat target/build-hashes/changed)
 for MODULE in $CHANGED_MODULES; do
   # deploy module $MODULE here
 done

@@ -1,16 +1,16 @@
 > buildHash
 
 # check if build hash file is written
-$ absent target/build-hash-default
+$ absent target/build-hashes/build-hash-default
 > buildHashStore
-$ exists target/build-hash-default
+$ exists target/build-hashes/build-hash-default
 
 # check if build hash file is only overwritten if hash actually changed
-$ copy-file target/build-hash-default target/build-hash-default.bak
+$ copy-file target/build-hashes/build-hash-default target/build-hashes/build-hash-default.bak
 > buildHashStore
--$ newer target/build-hash-default target/build-hash-default.bak
+-$ newer target/build-hashes/build-hash-default target/build-hashes/build-hash-default.bak
 
 # check if changes to the sources also change the hash
 $ touch src/main/scala/New.scala
 > buildHashStore
-$ newer target/build-hash-default target/build-hash-default.bak
+$ newer target/build-hashes/build-hash-default target/build-hashes/build-hash-default.bak
