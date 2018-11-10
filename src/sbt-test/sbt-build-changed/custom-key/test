@@ -1,6 +1,6 @@
-> buildSignature
+> buildHash
 
-# check if build signature file is written
-$ absent target/build-signature-custom
-> buildSignatureStore
-$ exists target/build-signature-custom
+# check if build hash file is written
+$ absent target/build-hash-custom
+> buildHashStore
+$ exists target/build-hash-custom

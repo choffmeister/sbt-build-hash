@@ -1,9 +1,9 @@
-# sbt-build-signature
+# sbt-build-hash
 
-[![Download](https://api.bintray.com/packages/choffmeister/sbt-plugins/sbt-build-signature/images/download.svg)](https://bintray.com/choffmeister//sbt-plugins/sbt-build-signature/_latestVersion)
+[![Download](https://api.bintray.com/packages/choffmeister/sbt-plugins/sbt-build-hash/images/download.svg)](https://bintray.com/choffmeister/sbt-plugins/sbt-build-hash/_latestVersion)
 
 An sbt plugin to detect which submodule actually has changes. It uses information about sources, resources, and
-classpath dependencies from SBT to calculate a SHA-1 signature for every module. The intend of this plugin is for usage
+classpath dependencies from SBT to calculate a SHA-1 hash for every module. The intend of this plugin is for usage
 with multi-module SBT projects that have continuous deployment attached. With this plugin one can reliably decide which
 microservices have to be updated after successful building.
 
@@ -14,7 +14,7 @@ This plugin requires sbt 1.0.0+
 ```scala
 // plugins.sbt
 resolvers += Resolver.bintrayIvyRepo("choffmeister", "sbt-plugins")
-addSbtPlugin("de.choffmeister" % "sbt-build-signature" % "x.y.z")
+addSbtPlugin("de.choffmeister" % "sbt-build-hash" % "x.y.z")
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 ```
 
@@ -27,19 +27,19 @@ lazy val service = project.in(file("service")).dependsOn(common)
     // You have continuous deployment in place which operates on your master branch. Then the key should probably
     // be the git branch. This way pushes to master are only compared to the last push to master, not to pushed to other
     // branches.
-    buildSignatureKey := s"service-${git.gitCurrentBranch.value}",
+    buildHashKey := s"service-${git.gitCurrentBranch.value}",
     // Make sure that this folder is kept across multiple builds of your project.
-    buildSignatureStoreDirectory := "/var/sbt/cache",
-    // If the signature should depend on more file than just sources, resources and classpath dependencies, you can add
+    buildHashStoreDirectory := "/var/sbt/cache",
+    // If the hash should depend on more file than just sources, resources and classpath dependencies, you can add
     // custom files here.
-    buildSignatureFiles += baseDirectory.value / "some-special-file.txt"
+    buildHashFiles += baseDirectory.value / "some-special-file.txt"
   )
 
 // this is a custom example task that you might want to add
-lazy val buildSignatureGenerateChangeList = taskKey[Unit]("this task is used to prepare a file for continuous deployment")
-buildSignatureGenerateChangeList := {
+lazy val buildHashGenerateChangeList = taskKey[Unit]("this task is used to prepare a file for continuous deployment")
+buildHashGenerateChangeList := {
   val changed =
-    buildSignatureOverview.value.collect {
+    buildHashOverview.value.collect {
       case (name, _, false) => name
     }
   sbt.IO.writeLines(file(".") / "changed.txt", changed)
@@ -48,14 +48,14 @@ buildSignatureGenerateChangeList := {
 
 ```bash
 # continuous-deployment.sh
-sbt buildSignatureGenerateChangeList
+sbt buildHashGenerateChangeList
 
 CHANGED_MODULES=$(cat changed.txt)
 for MODULE in $CHANGED_MODULES; do
   # deploy module $MODULE here
 done
 
-sbt buildSignatureStore
+sbt buildHashStore
 ```
 
 ### Testing

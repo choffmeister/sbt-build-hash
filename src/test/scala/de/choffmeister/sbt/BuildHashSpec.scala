@@ -2,7 +2,7 @@ package de.choffmeister.sbt
 
 import org.scalatest.FlatSpec
 
-class BuildSignatureSpec extends FlatSpec {
+class BuildHashSpec extends FlatSpec {
   "it" should "work" in {
     // TODO
   }

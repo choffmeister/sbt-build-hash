@@ -1,16 +1,16 @@
-> buildSignature
+> buildHash
 
-# check if build signature file is written
-$ absent target/build-signature-default
-> buildSignatureStore
-$ exists target/build-signature-default
+# check if build hash file is written
+$ absent target/build-hash-default
+> buildHashStore
+$ exists target/build-hash-default
 
-# check if build signature file is only overwritten if signature actually changed
-$ copy-file target/build-signature-default target/build-signature-default.bak
-> buildSignatureStore
--$ newer target/build-signature-default target/build-signature-default.bak
+# check if build hash file is only overwritten if hash actually changed
+$ copy-file target/build-hash-default target/build-hash-default.bak
+> buildHashStore
+-$ newer target/build-hash-default target/build-hash-default.bak
 
-# check if changes to the sources also change the signature
+# check if changes to the sources also change the hash
 $ touch src/main/scala/New.scala
-> buildSignatureStore
-$ newer target/build-signature-default target/build-signature-default.bak
+> buildHashStore
+$ newer target/build-hash-default target/build-hash-default.bak

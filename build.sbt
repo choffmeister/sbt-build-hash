@@ -1,4 +1,4 @@
-name := "sbt-build-signature"
+name := "sbt-build-hash"
 organization := "de.choffmeister"
 
 enablePlugins(GitVersioning)
@@ -8,7 +8,7 @@ sbtPlugin := true
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
 
 bintrayPackageLabels := Seq("sbt","plugin")
-bintrayVcsUrl := Some("git@github.com:choffmeister/sbt-build-signature.git")
+bintrayVcsUrl := Some("git@github.com:choffmeister/sbt-build-hash.git")
 
 initialCommands in console := "import de.choffmeister.sbt._"
 
