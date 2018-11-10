@@ -37,7 +37,7 @@ object BuildSignature {
   }
 
   private def signatureFile(directory: File, key: String) =
-    directory / s".build-$key.sig"
+    directory / s"build-signature-$key"
   private def hashBytes(content: Array[Byte]): Array[Byte] =
     MessageDigest.getInstance(`SHA-1`).digest(content)
   private def hashFilenameAndBytes(file: File, content: Array[Byte]): Array[Byte] =

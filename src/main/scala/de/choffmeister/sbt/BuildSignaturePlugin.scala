@@ -24,7 +24,7 @@ object BuildSignaturePlugin extends AutoPlugin {
 
   override lazy val projectSettings = Seq(
     buildSignatureKey := "default",
-    buildSignatureStoreDirectory := baseDirectory.value,
+    buildSignatureStoreDirectory := target.value,
     buildSignatureFiles := {
       val s = (sources in Compile).value
       val r = (resources in Compile).value

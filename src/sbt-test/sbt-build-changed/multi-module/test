@@ -1,24 +1,24 @@
 > buildSignature
 
 # check if build signature file is written
-$ absent app/.build-default.sig
-$ absent common/.build-default.sig
+$ absent app/target/build-signature-default
+$ absent common/target/build-signature-default
 > buildSignatureStore
-$ exists app/.build-default.sig
-$ exists common/.build-default.sig
+$ exists app/target/build-signature-default
+$ exists common/target/build-signature-default
 
 # check if changes to app (which depends on common) does not change signature of common
-$ copy-file app/.build-default.sig app/.build-default.sig.bak
-$ copy-file common/.build-default.sig common/.build-default.sig.bak
+$ copy-file app/target/build-signature-default app/target/build-signature-default.bak
+$ copy-file common/target/build-signature-default common/target/build-signature-default.bak
 $ touch app/src/main/scala/New.scala
 > buildSignatureStore
-$ newer app/.build-default.sig app/.build-default.sig.bak
-$ copy-file app/.build-default.sig app/.build-default.sig.bak
--$ newer app/.build-default.sig app/.build-default.sig.bak
--$ newer common/.build-default.sig common/.build-default.sig.bak
+$ newer app/target/build-signature-default app/target/build-signature-default.bak
+$ copy-file app/target/build-signature-default app/target/build-signature-default.bak
+-$ newer app/target/build-signature-default app/target/build-signature-default.bak
+-$ newer common/target/build-signature-default common/target/build-signature-default.bak
 
 # check if changes to common (which is used by app) does also change signature of app
 $ copy-file common/src-new/main/scala/Helper.scala common/src/main/scala/Helper.scala
 > buildSignatureStore
-$ newer app/.build-default.sig app/.build-default.sig.bak
-$ newer common/.build-default.sig common/.build-default.sig.bak
+$ newer app/target/build-signature-default app/target/build-signature-default.bak
+$ newer common/target/build-signature-default common/target/build-signature-default.bak
