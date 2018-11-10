@@ -33,24 +33,27 @@ lazy val service = project.in(file("service")).dependsOn(common)
     buildSignatureFiles += baseDirectory.value / "some-special-file.txt"
   )
 
-lazy val writeFileWithChangedModules = taskKey[Unit]("this task is used to prepare a file for continuous deployment")
-writeFileWithChangedModules := {
-  val changedModules =
+// this is a custom example task that you might want to add
+lazy val buildSignatureGenerateChangeList = taskKey[Unit]("this task is used to prepare a file for continuous deployment")
+buildSignatureGenerateChangeList := {
+  val changed =
     buildSignatureOverview.value.collect {
       case (name, _, false) => name
     }
-  sbt.IO.writeLines(file(".") / "changed.txt", changedModules)
+  sbt.IO.writeLines(file(".") / "changed.txt", changed)
 }
 ```
 
 ```bash
 # continuous-deployment.sh
-sbt writeFileWithChangedModules
+sbt buildSignatureGenerateChangeList
 
 CHANGED_MODULES=$(cat changed.txt)
 for MODULE in $CHANGED_MODULES; do
   # deploy module $MODULE here
 done
+
+sbt buildSignatureStore
 ```
 
 ### Testing
