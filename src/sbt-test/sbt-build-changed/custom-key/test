@@ -1,0 +1,6 @@
+> buildSignature
+
+# check if build signature file is written
+$ absent .build-custom.sig
+> buildSignatureStore
+$ exists .build-custom.sig

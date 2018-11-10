@@ -1,0 +1,16 @@
+> buildSignature
+
+# check if build signature file is written
+$ absent .build-default.sig
+> buildSignatureStore
+$ exists .build-default.sig
+
+# check if build signature file is only overwritten if signature actually changed
+$ copy-file .build-default.sig .build-default.sig.bak
+> buildSignatureStore
+-$ newer .build-default.sig .build-default.sig.bak
+
+# check if changes to the sources also change the signature
+$ touch src/main/scala/New.scala
+> buildSignatureStore
+$ newer .build-default.sig .build-default.sig.bak
