@@ -53,7 +53,34 @@ object ShaSum {
         (map.addEntry(group, Path(path), Hash(Hex.decodeHex(hash.toCharArray))), Some(group))
     }._1
   }
+
+  def diff(from: ShaSum, to: ShaSum): Set[DiffEntry] = {
+    def diffSets[T](a: Set[T], b: Set[T]): (Set[T], Set[T], Set[T]) = (a.diff(b), b.diff(a), a.intersect(b))
+
+    val (removedGroups, addedGroups, keptGroups) = diffSets(from.groups.keySet, to.groups.keySet)
+    val a = addedGroups.map(g => DiffEntry(DiffKind.Added, g, None))
+    val b = removedGroups.map(g => DiffEntry(DiffKind.Removed, g, None))
+    val c = keptGroups.foldLeft(Seq.empty[DiffEntry])((acc, g) => {
+      val (removedFiles, addedFiles, keptFiles) = diffSets(from.groups(g).keySet, to.groups(g).keySet)
+      val changedFiles = keptFiles.filter(f => from.groups(g)(f) != to.groups(g)(f))
+      val d = addedFiles.map(f => DiffEntry(DiffKind.Added, g, Some(f)))
+      val e = removedFiles.map(f => DiffEntry(DiffKind.Removed, g, Some(f)))
+      val f = changedFiles.map(f => DiffEntry(DiffKind.Changed, g, Some(f)))
+      acc ++ d ++ e ++ f
+    })
+
+    a ++ b ++ c
+  }
 }
+
+sealed trait DiffKind
+object DiffKind {
+  case object Added extends DiffKind
+  case object Removed extends DiffKind
+  case object Changed extends DiffKind
+}
+
+final case class DiffEntry(kind: DiffKind, group: String, path: Option[Path])
 
 final case class Path(path: String) {
   override def equals(that: Any): Boolean =

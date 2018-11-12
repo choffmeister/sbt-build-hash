@@ -27,21 +27,6 @@ object BuildHash {
     }.toMap)
   }
 
-  def diff(from: ShaSum, to: ShaSum): Unit = {
-    def diffSets[T](a: Set[T], b: Set[T]): (Set[T], Set[T], Set[T]) = (a.diff(b), b.diff(a), a.intersect(b))
-
-    val (removedGroups, addedGroups, keptGroups) = diffSets(from.groups.keySet, to.groups.keySet)
-    removedGroups.foreach(g => println(s"- $g"))
-    addedGroups.foreach(g => println(s"+ $g"))
-    keptGroups.foreach { g =>
-      val (removedFiles, addedFiles, keptFiles) = diffSets(from.groups(g).keySet, to.groups(g).keySet)
-      val changedFiles = keptFiles.filter(f => from.groups(g)(f) != to.groups(g)(f))
-      removedFiles.foreach(f => println(s"- $g:$f"))
-      addedFiles.foreach(f => println(s"+ $g:$f"))
-      changedFiles.foreach(f => println(s"~ $g:$f"))
-    }
-  }
-
   def writeShaSum(directory: File, key: String, shaSum: ShaSum): Unit = {
     if (!readShaSum(directory, key).contains(shaSum)) {
       write(hashFilePath(directory, key), ShaSum.serialize(shaSum).getBytes(`UTF-8`))

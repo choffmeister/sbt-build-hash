@@ -14,9 +14,9 @@ object BuildHashPlugin extends AutoPlugin {
     val buildHash = taskKey[ShaSum]("Calculates a hash including all sources, resources and classpath dependencies")
     val buildHashStoreDirectory = settingKey[File]("Directory to store build hashs to")
     val buildHashStore = taskKey[Unit]("Stores the build hash to disk")
-    val buildHashCheck = taskKey[Boolean]("Compares the calculated build hash with the one stored on disk")
+    val buildHashDiff = taskKey[Set[DiffEntry]]("Compares the calculated build hash with the one stored on disk")
     val buildHashWriteChanged = taskKey[Unit]("Writes a file listing only the changed modules")
-    val buildHashOverview = taskKey[Map[String, Boolean]]("Generates a overview over all modules with name, hash and changed flag")
+    val buildHashOverview = taskKey[Map[String, Set[DiffEntry]]]("Generates a overview over all modules with name, hash and changed flag")
   }
 
   import autoImport._
@@ -37,22 +37,31 @@ object BuildHashPlugin extends AutoPlugin {
     buildHashStore := {
       BuildHash.writeShaSum(buildHashStoreDirectory.value, buildHashKey.value, buildHash.value)
     },
-    buildHashCheck := {
+    buildHashDiff := {
+      val log = streams.value.log
       val prev = BuildHash.readShaSum(buildHashStoreDirectory.value, buildHashKey.value)
       val current = buildHash.value
-      println(s"Diffing ${name.value}")
-      BuildHash.diff(prev.getOrElse(ShaSum.empty), current)
-      prev.contains(current)
+      log.info(s"Diffing ${name.value}")
+      val diff = ShaSum.diff(prev.getOrElse(ShaSum.empty), current)
+      diff.foreach {
+        case DiffEntry(DiffKind.Added, group, None) => log.info(s"+ $group")
+        case DiffEntry(DiffKind.Added, group, Some(path)) => log.info(s"+ $group:$path")
+        case DiffEntry(DiffKind.Removed, group, None) => log.info(s"- $group")
+        case DiffEntry(DiffKind.Removed, group, Some(path)) => log.info(s"- $group:$path")
+        case DiffEntry(DiffKind.Changed, group, None) => log.info(s"~ $group")
+        case DiffEntry(DiffKind.Changed, group, Some(path)) => log.info(s"~ $group:$path")
+      }
+      diff
     },
     buildHashOverview := {
       val names = name.all(ScopeFilter(inAnyProject, inConfigurations(Compile))).value
-      val checks = (buildHashCheck ?? false).all(ScopeFilter(inAnyProject, inConfigurations(Compile))).value
-      names.zip(checks).toMap
+      val diffs = (buildHashDiff ?? Set.empty[DiffEntry]).all(ScopeFilter(inAnyProject, inConfigurations(Compile))).value
+      names.zip(diffs).toMap
     },
     buildHashWriteChanged := {
       val changed =
         buildHashOverview.value.collect {
-          case (name, false) => name
+          case (name, diff) if diff.nonEmpty => name
         }
       sbt.IO.writeLines(buildHashStoreDirectory.value / "changed", changed.toSeq.sorted)
     }

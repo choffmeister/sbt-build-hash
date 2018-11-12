@@ -73,12 +73,24 @@ class BuildHashSpec extends WordSpec with Matchers {
 
   "diff shasum" in {
     val shaSum = ShaSum(Map("sources" -> Map(Path("/bar") -> Hash(Array[Byte](0, 1, 2, 3)))))
-    BuildHash.diff(shaSum, shaSum)
-    BuildHash.diff(shaSum, shaSum.addGroup("empty"))
-    BuildHash.diff(shaSum, shaSum.addEntry("sources", Path("/bar"), Hash(Array[Byte](3, 2, 1, 0))))
-    BuildHash.diff(shaSum, shaSum.addEntry("sources", Path("/bar2"), Hash(Array[Byte](3, 2, 1, 0))))
-    BuildHash.diff(shaSum, shaSum.removeGroup("sources"))
-    BuildHash.diff(shaSum, shaSum.removeEntry("sources", Path("/bar")))
+
+    val a = ShaSum.diff(shaSum, shaSum)
+    a should be(Set.empty)
+
+    val b = ShaSum.diff(shaSum, shaSum.addGroup("empty"))
+    b should be(Set(DiffEntry(DiffKind.Added, "empty", None)))
+
+    val c = ShaSum.diff(shaSum, shaSum.addEntry("sources", Path("/bar"), Hash(Array[Byte](3, 2, 1, 0))))
+    c should be(Set(DiffEntry(DiffKind.Changed, "sources", Some(Path("/bar")))))
+
+    val d = ShaSum.diff(shaSum, shaSum.addEntry("sources", Path("/bar2"), Hash(Array[Byte](3, 2, 1, 0))))
+    d should be(Set(DiffEntry(DiffKind.Added, "sources", Some(Path("/bar2")))))
+
+    val e = ShaSum.diff(shaSum, shaSum.removeGroup("sources"))
+    e should be(Set(DiffEntry(DiffKind.Removed, "sources", None)))
+
+    val f = ShaSum.diff(shaSum, shaSum.removeEntry("sources", Path("/bar")))
+    f should be(Set(DiffEntry(DiffKind.Removed, "sources", Some(Path("/bar")))))
   }
 
   private def withTempDir[T](fn: File => T): T = {

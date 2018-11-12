@@ -12,5 +12,6 @@ $ copy-file target/build-hashes/default.sha1 target/build-hashes/default.sha1.ba
 
 # check if changes to the sources also change the hash
 $ touch src/main/scala/New.scala
+> buildHashDiff
 > buildHashStore
 $ newer target/build-hashes/default.sha1 target/build-hashes/default.sha1.bak
