@@ -55,7 +55,7 @@ object BuildHash {
   }
 
   private def hashFilePath(directory: File, key: String) =
-    directory / s"build-hash-$key"
+    directory / s"$key.sha1"
   private def calculateHash(content: Array[Byte]): Array[Byte] =
     MessageDigest.getInstance(`SHA-1`).digest(content)
 }

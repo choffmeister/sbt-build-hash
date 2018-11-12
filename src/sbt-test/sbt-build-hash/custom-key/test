@@ -1,0 +1,6 @@
+> buildHash
+
+# check if build hash file is written
+$ absent target/build-hashes/custom.sha1
+> buildHashStore
+$ exists target/build-hashes/custom.sha1

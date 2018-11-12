@@ -1,6 +1,0 @@
-> buildHash
-
-# check if build hash file is written
-$ absent target/build-hashes/build-hash-custom
-> buildHashStore
-$ exists target/build-hashes/build-hash-custom
