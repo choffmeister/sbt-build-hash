@@ -9,21 +9,21 @@ object BuildHashPlugin extends AutoPlugin {
   override def requires = JvmPlugin
 
   object autoImport {
-    val buildHashKey = settingKey[String]("Key to be able to distinguish different build hash (for example master vs. some other branch)")
+    val buildHashKey = settingKey[String]("Key to be able to distinguish different build hashes (for example master vs. some other branch)")
     val buildHashFiles = taskKey[Seq[(String, Seq[File])]]("Files and directories to include into the build hash")
     val buildHash = taskKey[ShaSum]("Calculates a hash including all sources, resources and classpath dependencies")
-    val buildHashStoreDirectory = settingKey[File]("Directory to store build hashs to")
-    val buildHashStore = taskKey[Unit]("Stores the build hash to disk")
     val buildHashDiff = taskKey[Set[DiffEntry]]("Compares the calculated build hash with the one stored on disk")
-    val buildHashWriteChanged = taskKey[Unit]("Writes a file listing only the changed modules")
-    val buildHashOverview = taskKey[Map[String, Set[DiffEntry]]]("Generates a overview over all modules with name, hash and changed flag")
+    val buildHashTargetDirectory = settingKey[File]("Directory to store build hashes to")
+    val buildHashSave = taskKey[Unit]("Save the build hashes to disk")
+    val buildHashChangesInAggregates = taskKey[Map[String, Set[DiffEntry]]]("List changes across all aggregated projects")
+    val buildHashWriteChangedInAggregates = taskKey[Unit]("Writes a file listing changed aggregated projects")
   }
 
   import autoImport._
 
   override lazy val projectSettings = Seq(
-    buildHashKey := "default",
-    buildHashStoreDirectory := target.value / "build-hashes",
+    buildHashKey := name.value,
+    buildHashTargetDirectory := target.value / "build-hashes",
     buildHashFiles := {
       Seq(
         "sources" -> (sources in Compile).value,
@@ -34,12 +34,10 @@ object BuildHashPlugin extends AutoPlugin {
     buildHash := {
       BuildHash.createShaSum(buildHashFiles.value)
     },
-    buildHashStore := {
-      BuildHash.writeShaSum(buildHashStoreDirectory.value, buildHashKey.value, buildHash.value)
-    },
     buildHashDiff := {
+      val file = hashFilePath(buildHashTargetDirectory.value, buildHashKey.value)
       val log = streams.value.log
-      val prev = BuildHash.readShaSum(buildHashStoreDirectory.value, buildHashKey.value)
+      val prev = BuildHash.readShaSum(file)
       val current = buildHash.value
       log.info(s"Diffing ${name.value}")
       val diff = ShaSum.diff(prev.getOrElse(ShaSum.empty), current)
@@ -53,17 +51,29 @@ object BuildHashPlugin extends AutoPlugin {
       }
       diff
     },
-    buildHashOverview := {
-      val names = name.all(ScopeFilter(inAnyProject, inConfigurations(Compile))).value
-      val diffs = (buildHashDiff ?? Set.empty[DiffEntry]).all(ScopeFilter(inAnyProject, inConfigurations(Compile))).value
+    buildHashSave := {
+      val keys = buildHashKey.all(ScopeFilter(inAggregates(ThisProject, transitive = true, includeRoot = false), inConfigurations(Compile))).value
+      val buildHashes = buildHash.all(ScopeFilter(inAggregates(ThisProject, transitive = true, includeRoot = false), inConfigurations(Compile))).value
+      keys.zip(buildHashes).toMap.foreach { case (key, shaSum) =>
+        val file = hashFilePath(buildHashTargetDirectory.value, key)
+        BuildHash.writeShaSum(file, shaSum)
+      }
+    },
+    buildHashChangesInAggregates := {
+      val names = name.all(ScopeFilter(inAggregates(ThisProject, transitive = true, includeRoot = false), inConfigurations(Compile))).value
+      val diffs = (buildHashDiff ?? Set.empty[DiffEntry]).all(ScopeFilter(inAggregates(ThisProject, transitive = true, includeRoot = false), inConfigurations(Compile))).value
       names.zip(diffs).toMap
     },
-    buildHashWriteChanged := {
+    buildHashWriteChangedInAggregates := {
+      val file = buildHashTargetDirectory.value / "changed"
       val changed =
-        buildHashOverview.value.collect {
+        buildHashChangesInAggregates.value.collect {
           case (name, diff) if diff.nonEmpty => name
         }
-      sbt.IO.writeLines(buildHashStoreDirectory.value / "changed", changed.toSeq.sorted)
+      sbt.IO.writeLines(file, changed.toSeq.sorted)
     }
   )
+
+  private def hashFilePath(directory: File, key: String) =
+    directory / s"$key.sha1"
 }

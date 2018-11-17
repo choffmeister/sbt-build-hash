@@ -27,20 +27,18 @@ object BuildHash {
     }.toMap)
   }
 
-  def writeShaSum(directory: File, key: String, shaSum: ShaSum): Unit = {
-    if (!readShaSum(directory, key).contains(shaSum)) {
-      write(hashFilePath(directory, key), ShaSum.serialize(shaSum).getBytes(`UTF-8`))
+  def writeShaSum(file: File, shaSum: ShaSum): Unit = {
+    if (!readShaSum(file).contains(shaSum)) {
+      write(file, ShaSum.serialize(shaSum).getBytes(`UTF-8`))
     }
   }
 
-  def readShaSum(directory: File, key: String): Option[ShaSum] = {
-    Try(readBytes(hashFilePath(directory, key)))
+  def readShaSum(file: File): Option[ShaSum] = {
+    Try(readBytes(file))
       .map(bs => ShaSum.deserialize(new String(bs, `UTF-8`)))
       .toOption
   }
 
-  private def hashFilePath(directory: File, key: String) =
-    directory / s"$key.sha1"
   private def calculateHash(content: Array[Byte]): Array[Byte] =
     MessageDigest.getInstance(`SHA-1`).digest(content)
 }

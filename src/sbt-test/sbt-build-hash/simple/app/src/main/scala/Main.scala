@@ -1,4 +1,6 @@
-package simple
+package multi.app
+
+import multi.common.Helper
 
 /**
   * A simple class and objects to write tests against.
@@ -14,6 +16,6 @@ object Main {
   def function = 2*constant
 
   def main(args: Array[String]): Unit = {
-    println(new Main().default)
+    println(Helper.greet(new Main().default))
   }
 }

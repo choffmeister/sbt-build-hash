@@ -22,32 +22,43 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
 ```scala
 // build.sbt
+lazy val  = Seq(
+  // Make sure that the key properly separates your relevant builds from irrelevant ones. Example:
+  // You have continuous deployment in place which operates on your master branch. Then the key should probably
+  // include the git branch. This way pushes to master are only compared to the last push to master, not to pushed to
+  // other branches.
+  buildHashKey := s"${name.value}-${git.gitCurrentBranch.value}",
+  // If the hash should depend on more file than just sources, resources and classpath dependencies, you can add
+  // custom files here.
+  buildHashFiles += baseDirectory.value / "some-special-file.txt"
+)
+
+lazy val buildHashRootSettings = Seq(
+  // Make sure that this folder is kept across multiple builds of your project.
+  buildHashTargetDirectory := "/var/sbt/cache"
+)
+
 lazy val common = project.in(file("common"))
-lazy val service = project.in(file("service")).dependsOn(common)
-  .settings(
-    // Make sure that the key properly separates your relevant builds from irrelevant ones. Example:
-    // You have continuous deployment in place which operates on your master branch. Then the key should probably
-    // include the git branch. This way pushes to master are only compared to the last push to master, not to pushed to
-    // other branches.
-    buildHashKey := s"${name.value}-${git.gitCurrentBranch.value}",
-    // Make sure that this folder is kept across multiple builds of your project.
-    buildHashStoreDirectory := "/var/sbt/cache",
-    // If the hash should depend on more file than just sources, resources and classpath dependencies, you can add
-    // custom files here.
-    buildHashFiles += baseDirectory.value / "some-special-file.txt"
-  )
+  .settings(buildHashModuleSettings)
+  
+lazy val service = project.in(file("service"))
+  .settings(buildHashModuleSettings)
+  .dependsOn(common)
+  
+lazy val root = projcet.in(file("."))
+  .settings(buildHashRootSettings)
 ```
 
 ```bash
 # continuous-deployment.sh
-sbt buildHashWriteChanged
+sbt buildHashWriteChangedInAggregates
 
 CHANGED_MODULES=$(cat target/build-hashes/changed)
 for MODULE in $CHANGED_MODULES; do
   # deploy module $MODULE here
 done
 
-sbt buildHashStore
+sbt buildHashSave
 ```
 
 ### Testing

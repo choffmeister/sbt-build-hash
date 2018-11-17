@@ -1,17 +1,31 @@
 > buildHash
 
 # check if build hash file is written
-$ absent target/build-hashes/default.sha1
-> buildHashStore
-$ exists target/build-hashes/default.sha1
+$ absent target/build-hashes/app.sha1
+$ absent target/build-hashes/common.sha1
+> buildHashSave
+$ exists target/build-hashes/app.sha1
+$ exists target/build-hashes/common.sha1
+$ absent target/build-hashes/root.sha1
+$ absent app/target/build-hashes/app.sha1
+$ absent common/target/build-hashes/common.sha1
 
-# check if build hash file is only overwritten if hash actually changed
-$ copy-file target/build-hashes/default.sha1 target/build-hashes/default.sha1.bak
-> buildHashStore
--$ newer target/build-hashes/default.sha1 target/build-hashes/default.sha1.bak
+# check if changes to app (which depends on common) does not change hash of common
+$ copy-file target/build-hashes/app.sha1 target/build-hashes/app.sha1.bak
+$ copy-file target/build-hashes/common.sha1 target/build-hashes/common.sha1.bak
+$ touch app/src/main/scala/New.scala
+> buildHashSave
+$ newer target/build-hashes/app.sha1 target/build-hashes/app.sha1.bak
+$ copy-file target/build-hashes/app.sha1 target/build-hashes/app.sha1.bak
+-$ newer target/build-hashes/app.sha1 target/build-hashes/app.sha1.bak
+-$ newer target/build-hashes/common.sha1 target/build-hashes/common.sha1.bak
 
-# check if changes to the sources also change the hash
-$ touch src/main/scala/New.scala
-> buildHashDiff
-> buildHashStore
-$ newer target/build-hashes/default.sha1 target/build-hashes/default.sha1.bak
+# check if changes to common (which is used by app) does also change hash of app
+$ copy-file common/src-new/main/scala/Helper.scala common/src/main/scala/Helper.scala
+> buildHashSave
+$ newer target/build-hashes/app.sha1 target/build-hashes/app.sha1.bak
+$ newer target/build-hashes/common.sha1 target/build-hashes/common.sha1.bak
+
+# check if changed list is written
+> buildHashWriteChangedInAggregates
+$ exists target/build-hashes/changed

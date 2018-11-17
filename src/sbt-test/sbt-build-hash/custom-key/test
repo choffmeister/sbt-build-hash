@@ -1,6 +1,4 @@
-> buildHash
-
-# check if build hash file is written
-$ absent target/build-hashes/custom.sha1
-> buildHashStore
-$ exists target/build-hashes/custom.sha1
+# check if custom build hash key is respected
+> buildHashSave
+$ exists target/build-hashes/app-custom.sha1
+$ exists target/build-hashes/common-custom.sha1

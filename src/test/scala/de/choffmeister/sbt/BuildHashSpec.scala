@@ -5,6 +5,7 @@ import java.nio.file.Files
 
 import org.apache.commons.codec.binary.Hex
 import org.scalatest.{Matchers, WordSpec}
+import sbt._
 
 class BuildHashSpec extends WordSpec with Matchers {
   "list files" in {
@@ -65,8 +66,8 @@ class BuildHashSpec extends WordSpec with Matchers {
   "read and write shasum" in {
     withTempDir { dir =>
       val shaSum1 = ShaSum(Map("sources" -> Map(Path("/bar") -> Hash(Array[Byte](0, 1, 2, 3)))))
-      BuildHash.writeShaSum(dir, "default", shaSum1)
-      val shaSum2 = BuildHash.readShaSum(dir, "default")
+      BuildHash.writeShaSum(dir / "default", shaSum1)
+      val shaSum2 = BuildHash.readShaSum(dir / "default")
       shaSum2.contains(shaSum1) should be(true)
     }
   }
