@@ -22,7 +22,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
 ```scala
 // build.sbt
-lazy val  = Seq(
+lazy val buildHashModuleSettings = Seq(
   // Make sure that the key properly separates your relevant builds from irrelevant ones. Example:
   // You have continuous deployment in place which operates on your master branch. Then the key should probably
   // include the git branch. This way pushes to master are only compared to the last push to master, not to pushed to
@@ -40,11 +40,11 @@ lazy val buildHashRootSettings = Seq(
 
 lazy val common = project.in(file("common"))
   .settings(buildHashModuleSettings)
-  
+
 lazy val service = project.in(file("service"))
   .settings(buildHashModuleSettings)
   .dependsOn(common)
-  
+
 lazy val root = projcet.in(file("."))
   .settings(buildHashRootSettings)
 ```
@@ -71,7 +71,7 @@ Run `scripted` for [sbt script tests](http://www.scala-sbt.org/1.x/docs/Testing-
 
 1. publish your source to GitHub
 2. [create a bintray account](https://bintray.com/signup/index) and [set up bintray credentials](https://github.com/sbt/sbt-bintray#publishing)
-3. create a bintray repository `sbt-plugins` 
+3. create a bintray repository `sbt-plugins`
 4. update your bintray publishing settings in `build.sbt`
 5. `sbt publish`
 6. [request inclusion in sbt-plugin-releases](https://bintray.com/sbt/sbt-plugin-releases)
