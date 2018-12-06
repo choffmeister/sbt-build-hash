@@ -22,10 +22,13 @@ $ copy-file target/build-hashes/app.sha1 target/build-hashes/app.sha1.bak
 
 # check if changes to common (which is used by app) does also change hash of app
 $ copy-file common/src-new/main/scala/Helper.scala common/src/main/scala/Helper.scala
+> buildHashWriteChangedInAggregates
+$ exists target/build-hashes/changed
+$ copy target/build-hashes/changed target/build-hashes/changed.bak
+$ pause
 > buildHashSave
 $ newer target/build-hashes/app.sha1 target/build-hashes/app.sha1.bak
 $ newer target/build-hashes/common.sha1 target/build-hashes/common.sha1.bak
-
-# check if changed list is written
 > buildHashWriteChangedInAggregates
-$ exists target/build-hashes/changed
+$ newer target/build-hashes/changed target/build-hashes/changed.bak
+$ pause
